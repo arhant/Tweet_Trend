@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<title>Tweet Analysis</title>
+     <head>
+		  
+          <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+          <script src="https://sdk.amazonaws.com/js/aws-sdk-2.154.0.min.js"></script>
+          <h2 style="color:#FFD700;" align="center"></b>Select a Keyword</b></h2>
+          <style>
+		  body {
+		  background-image: url("http://farm7.static.flickr.com/6224/6323180339_095a18e2a1_b.jpg");
+		  }
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+	  
+	  
+    </style>
+     </head>
+
+<form>
+
+     <select id="options" name ="options2">
+                    <option value="MissUniverse"><b>Miss Universe</b></option>
+                    <option value="christmas"><b>Christmas</b></option>
+                    <option value="trump"><b>Trump</b></option>
+                    <option value="Holidays"><b>Holidays</b></option>
+                    <option value="google"><b>Google</b></option>
+                    <option value="love"><b>Love</b></option>
+                    <option value="football"><b>Football</b></option>
+                    <option value="music"><b>Music</b></option>
+                    <option value="USA"><b>USA</b></option>
+                    <option value="Santa"><b>Santa</b></option>
+                    
+
+
+     </select>
+     <button type="submit" name="submit">Submit</button>
+</form>
+<div id="map"></div>
+<script type="text/javascript">
+ var API_URL='https://u0whixpbj1.execute-api.us-east-2.amazonaws.com/prod/sqs';
+ var tweets;
+ var map;
+ var ctr;
+ var tmp = 0;
+ var keyvalue ="";
+ $("form").submit(function(event){
+        event.preventDefault();
+        var keyword=$("#options").val();
+        //var k=keyword.serialize();
+        //console.log(keyword);
+        var url2=API_URL+"?options="+keyword
+        console.log(url2)
+       $.ajax({
+        type: 'GET',
+        url: url2,
+        
+
+        success: function(data) {
+            console.log(data.length);
+            tweets=data;
+      //removed google map for now from here
+		}
+		});
+        
+    var xhttp = new XMLHttpRequest();
+	xhttp.open( "GET","https://search-tweet-fksthbpbms6dtprd675ioga26a.us-east-2.es.amazonaws.com/tweepy/_search/?size=1000")
+	xhttp.send()
+	xhttp.onreadystatechange = function() { 
+   	if(xhttp.status==200 && xhttp.readyState == 4){
+        var rsp = xhttp.responseText;
+        var jsonResponse = JSON.parse(rsp);
+		var a = jsonResponse["hits"]["hits"];
+		var b = a[0]._source;
+		var c = b.lat;
+	 var target = {lat: 14.613358, lng: 6.820310};
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 3,
+          center: new google.maps.LatLng(target.lat,target.lng),
+          mapTypeId: 'terrain'
+        });
+		ctr = 0;
+		$.each (a, function (bb) {
+		var d = a[bb]._source;
+		var e = d.content.toString();
+
+
+		
+		if (e.indexOf(keyword) >= 0){
+		ctr = ctr+1;
+		var latitude = parseFloat(d.lat);
+	 var longitude = parseFloat(d.lng);
+	 
+        var latlng= new google.maps.LatLng(longitude,latitude);
+		if(d.sentiment.toString()=='positive')
+     { 
+        var marker = new google.maps.Marker({
+        position: latlng,
+        icon:"happy.png",
+        map: map,
+		title:(e)
+            });
+        
+
+      }
+	  
+      if(d.sentiment.toString()=='neutral')
+     {
+
+     
+        var marker = new google.maps.Marker({
+        position: latlng,
+        icon:"neutral.png",
+        map: map,
+		title:(e)
+            });
+
+      }
+      if(d.sentiment.toString()=='negative')
+     {
+
+        
+        var marker = new google.maps.Marker({
+        position: latlng,
+        icon:"sad.png",
+        map: map,
+        title:(e)
+            });
+        //}
+      }
+		}
+});
+if(tmp != ctr && ctr !=0 && (keyvalue == "" || keyvalue == keyword)){
+					var notifications = ctr - tmp;
+					alert("New notifications: " + notifications);
+					tmp = ctr;
+					ctr = 0;
+					keyvalue = keyword;
+			}
+			else if(keyvalue != keyword){
+					alert("New notifications: " + ctr );
+					tmp = ctr;
+					ctr = 0;
+					keyvalue = keyword;
+			}
+			else{
+					alert("No new notifications or tweets for the keyword");
+			}
+}
+}
+});
+          
+        
+       
+        
+</script>
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9C3dSkZ88Erixrn-BrX8EdzxrjPX_0pI&callback">
+    </script>
+</body>
+</html>
