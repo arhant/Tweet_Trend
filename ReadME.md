@@ -1,5 +1,10 @@
 # **Tweet Trend**
 
+The System used Front-End hosted on AWS S3, API Gateway to trigger AWS Lambda functions, which used Tweepy to extract tweets and MonkeyLearn for sentimental analysis. SNS and SQS were used for communication, and tweets were plotted on Google Maps with sentiments using Elasticsearch.
+
+*System is not running at this point.
+
+
 There are 3 python files and 1 Html file
 
 -lambda3 (sqs): Extract data such as tweets and co-ordinates using tweepy.
